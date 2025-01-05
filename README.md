@@ -47,3 +47,22 @@ venv\Scripts\activate         # On Windows
 pip install -r requirements.txt
 ```
 
+# FOR GIT PUSHING:
+```
+git init
+git remote add origin https://github.com/RAWx18/Jhakaas-Rasta.git
+git add .
+git commit -m "Initial commit" # Change the message as needed
+git branch -M main  # Rename your branch to 'main' if it's not already named
+git push -u origin main
+```
+
+# FOR GIT PULLING:
+```
+git pull origin main --rebase
+```
+
+# FOR FORCE PUSH:
+```
+git push origin main --force
+```
