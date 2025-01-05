@@ -1,0 +1,18 @@
+<!-- indian_traffic.net.xml -->
+<?xml version="1.0" encoding="UTF-8"?>
+<net version="1.9" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+    <!-- 4-way intersection with multiple lanes -->
+    <location netOffset="0.00,0.00" convBoundary="0.00,0.00,200.00,200.00" origBoundary="-10000000000.00,-10000000000.00,10000000000.00,10000000000.00" projParameter="!"/>
+    
+    <!-- Edge Types -->
+    <type id="highway" priority="3" numLanes="3" speed="27.78"/>
+    <type id="local" priority="2" numLanes="2" speed="13.89"/>
+    
+    <!-- Main Roads -->
+    <edge id="E1" from="J1" to="J2" type="highway">
+        <lane id="E1_0" index="0" speed="16.67" length="100.00" width="3.20"/>
+        <lane id="E1_1" index="1" speed="16.67" length="100.00" width="3.20"/>
+        <lane id="E1_2" index="2" speed="16.67" length="100.00" width="3.20"/>
+    </edge>
+    <!-- Add more edges for complete network -->
+</net>
