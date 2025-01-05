@@ -5,6 +5,7 @@ import torch
 from torch.optim import Adam
 import logging
 from typing import Dict, List
+from config import DataConfig, SimulationConfig, ModelConfig
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
