@@ -5,6 +5,7 @@ import torch
 import torch.nn as nn
 import torchvision.models as models
 from typing import List, Tuple
+from config import ModelConfig
 
 class PerceptionSystem(nn.Module):
     """Main perception system combining CNN backbone with FPN"""

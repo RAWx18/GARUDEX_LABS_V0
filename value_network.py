@@ -3,6 +3,7 @@
 
 import torch
 import torch.nn as nn
+from config import ModelConfig
 
 class ValueNetwork(nn.Module):
     """Dual Q-network for value estimation"""

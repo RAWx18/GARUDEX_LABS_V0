@@ -4,6 +4,7 @@
 import torch
 import torch.nn as nn
 from typing import Tuple
+from config import ModelConfig
 
 class PolicyNetwork(nn.Module):
     """Policy network combining LSTM and attention mechanisms"""

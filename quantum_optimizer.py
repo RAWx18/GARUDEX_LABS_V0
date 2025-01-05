@@ -1,8 +1,9 @@
 # File: quantum_optimizer.py
 """Quantum computing integration for route optimization"""
 
-from qiskit import QuantumCircuit, execute, Aer
-from typing import List, Tuple
+from qiskit import QuantumCircuit, execute
+from qiskit_aer import Aer
+from typing import List
 
 class QuantumRouteOptimizer:
     """QAOA implementation for route optimization"""

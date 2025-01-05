@@ -4,6 +4,7 @@
 import traci
 import numpy as np
 from typing import Dict, Tuple
+from config import SimulationConfig
 
 class SUMOEnvironment:
     """Wrapper for SUMO traffic simulation"""
