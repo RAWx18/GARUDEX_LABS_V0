@@ -1,18 +1,40 @@
 <!-- indian_traffic.net.xml -->
 <?xml version="1.0" encoding="UTF-8"?>
 <net version="1.9" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
-    <!-- 4-way intersection with multiple lanes -->
-    <location netOffset="0.00,0.00" convBoundary="0.00,0.00,200.00,200.00" origBoundary="-10000000000.00,-10000000000.00,10000000000.00,10000000000.00" projParameter="!"/>
+    <location netOffset="0.00,0.00" convBoundary="0.00,0.00,500.00,500.00" origBoundary="-10000000000.00,-10000000000.00,10000000000.00,10000000000.00" projParameter="!"/>
     
-    <!-- Edge Types -->
-    <type id="highway" priority="3" numLanes="3" speed="27.78"/>
-    <type id="local" priority="2" numLanes="2" speed="13.89"/>
+    <!-- Edge Types for Different Road Categories -->
+    <type id="arterial" priority="3" numLanes="3" speed="16.67" disallow="bicycle"/>
+    <type id="urban_major" priority="2" numLanes="2" speed="13.89"/>
+    <type id="urban_minor" priority="1" numLanes="2" speed="11.11"/>
     
-    <!-- Main Roads -->
-    <edge id="E1" from="J1" to="J2" type="highway">
-        <lane id="E1_0" index="0" speed="16.67" length="100.00" width="3.20"/>
-        <lane id="E1_1" index="1" speed="16.67" length="100.00" width="3.20"/>
-        <lane id="E1_2" index="2" speed="16.67" length="100.00" width="3.20"/>
+    <!-- Junction Definitions -->
+    <node id="junction1" x="0.00" y="250.00" type="priority"/>
+    <node id="junction2" x="250.00" y="250.00" type="traffic_light"/>
+    <node id="junction3" x="500.00" y="250.00" type="priority"/>
+    <node id="junction4" x="250.00" y="0.00" type="priority"/>
+    <node id="junction5" x="250.00" y="500.00" type="priority"/>
+    
+    <!-- Road Segments -->
+    <edge id="E1" from="junction1" to="junction2" type="arterial">
+        <lane id="E1_0" index="0" speed="16.67" length="250.00" width="3.50"/>
+        <lane id="E1_1" index="1" speed="16.67" length="250.00" width="3.50"/>
+        <lane id="E1_2" index="2" speed="16.67" length="250.00" width="3.50"/>
     </edge>
-    <!-- Add more edges for complete network -->
+    
+    <edge id="E2" from="junction2" to="junction3" type="arterial">
+        <lane id="E2_0" index="0" speed="16.67" length="250.00" width="3.50"/>
+        <lane id="E2_1" index="1" speed="16.67" length="250.00" width="3.50"/>
+        <lane id="E2_2" index="2" speed="16.67" length="250.00" width="3.50"/>
+    </edge>
+    
+    <edge id="N1" from="junction4" to="junction2" type="urban_major">
+        <lane id="N1_0" index="0" speed="13.89" length="250.00" width="3.20"/>
+        <lane id="N1_1" index="1" speed="13.89" length="250.00" width="3.20"/>
+    </edge>
+    
+    <edge id="N2" from="junction2" to="junction5" type="urban_major">
+        <lane id="N2_0" index="0" speed="13.89" length="250.00" width="3.20"/>
+        <lane id="N2_1" index="1" speed="13.89" length="250.00" width="3.20"/>
+    </edge>
 </net>
