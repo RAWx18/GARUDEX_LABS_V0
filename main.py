@@ -11,7 +11,8 @@ from perception import PerceptionSystem
 from sumo_env import SUMOEnvironment
 from value_network import ValueNetwork
 from policy_network import PolicyNetwork
-
+from experience_buffer import PrioritizedReplayBuffer
+from quantum_optimizer import QuantumRouteOptimizer
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
