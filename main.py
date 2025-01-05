@@ -7,6 +7,11 @@ import logging
 from typing import Dict, List
 from config import DataConfig, SimulationConfig, ModelConfig
 from data_processor import VideoProcessor
+from perception import PerceptionSystem
+from sumo_env import SUMOEnvironment
+from value_network import ValueNetwork
+from policy_network import PolicyNetwork
+
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
