@@ -1,11 +1,12 @@
-"""Quantum computing integration for route optimization in Indian driving scenarios."""
+"""Quantum computing integration for route optimization using current Qiskit best practices."""
 
 from typing import List, Dict, Tuple
 import numpy as np
-from qiskit import QuantumCircuit, execute
+from qiskit import QuantumCircuit
 from qiskit_aer import Aer
-from qiskit.algorithms.optimizers import COBYLA
+from qiskit_algorithms.optimizers import COBYLA
 from qiskit.quantum_info import Pauli
+from qiskit.primitives import Sampler  # New import for sampling
 
 class QuantumRouteOptimizer:
     """QAOA implementation for route optimization in Indian traffic conditions."""
@@ -20,7 +21,8 @@ class QuantumRouteOptimizer:
         """
         self.num_qubits = num_qubits
         self.depth = depth
-        self.simulator = Aer.get_backend('qasm_simulator')
+        self.backend = Aer.get_backend('aer_simulator')  # Updated to aer_simulator
+        self.sampler = Sampler()  # Initialize the sampler primitive
         self.optimizer = COBYLA(
             maxiter=1000,
             tol=1e-6
@@ -49,7 +51,7 @@ class QuantumRouteOptimizer:
         if cost_matrix.shape[0] > 2**self.num_qubits:
             raise ValueError("Too many locations for given number of qubits")
             
-        # Create and execute QAOA circuit
+        # Create and optimize QAOA circuit
         circuit = self._create_qaoa_circuit(cost_matrix)
         optimal_params = self._optimize_parameters(circuit, cost_matrix)
         final_circuit = self._create_qaoa_circuit(
@@ -58,98 +60,39 @@ class QuantumRouteOptimizer:
             gammas=optimal_params['gammas']
         )
         
-        result = execute(
-            final_circuit,
-            self.simulator,
-            shots=self.config['shots'],
-            seed_simulator=self.config['seed'],
-            optimization_level=self.config['optimization_level']
-        ).result()
+        # Use sampler instead of execute
+        job = self.sampler.run(
+            circuits=[final_circuit],
+            shots=self.config['shots']
+        )
+        result = job.result()
         
-        counts = result.get_counts()
+        # Process quasi-distribution from sampler
+        quasi_dist = result.quasi_dists[0]
+        counts = self._convert_quasi_dist_to_counts(quasi_dist)
+        
         return self._process_results(counts, cost_matrix)
     
-    def _create_qaoa_circuit(
-        self, 
-        cost_matrix: np.ndarray,
-        betas: List[float] = None,
-        gammas: List[float] = None
-    ) -> QuantumCircuit:
+    def _convert_quasi_dist_to_counts(self, quasi_dist: Dict[int, float]) -> Dict[str, int]:
         """
-        Create QAOA circuit for route optimization.
+        Convert quasi-distribution to counts format.
         
         Args:
-            cost_matrix (np.ndarray): Matrix of costs between locations
-            betas (List[float], optional): Mixing angles
-            gammas (List[float], optional): Cost angles
+            quasi_dist (Dict[int, float]): Quasi-distribution from sampler
             
         Returns:
-            QuantumCircuit: Prepared QAOA circuit
+            Dict[str, int]: Counts dictionary
         """
-        if betas is None:
-            betas = self.config['initial_betas']
-        if gammas is None:
-            gammas = self.config['initial_gammas']
+        counts = {}
+        total_shots = self.config['shots']
+        
+        for bitstring, probability in quasi_dist.items():
+            # Convert integer to binary string with proper padding
+            binary = format(bitstring, f'0{self.num_qubits}b')
+            # Convert probability to count
+            counts[binary] = int(round(probability * total_shots))
             
-        qc = QuantumCircuit(self.num_qubits, self.num_qubits)
-        
-        # Initialize in superposition
-        qc.h(range(self.num_qubits))
-        
-        # Add QAOA layers
-        for layer in range(self.depth):
-            self._add_cost_layer(qc, cost_matrix, gammas[layer])
-            self._add_mixer_layer(qc, betas[layer])
-            
-        # Measurement
-        qc.measure(range(self.num_qubits), range(self.num_qubits))
-        
-        return qc
-    
-    def _add_cost_layer(
-        self,
-        qc: QuantumCircuit,
-        cost_matrix: np.ndarray,
-        gamma: float
-    ) -> None:
-        """
-        Add cost Hamiltonian layer to the circuit.
-        
-        Args:
-            qc (QuantumCircuit): Quantum circuit
-            cost_matrix (np.ndarray): Cost matrix
-            gamma (float): Cost angle parameter
-        """
-        n = cost_matrix.shape[0]
-        
-        # Add cost terms for each pair of locations
-        for i in range(n):
-            for j in range(i+1, n):
-                cost = cost_matrix[i,j]
-                if abs(cost) > 1e-10:  # Skip near-zero costs
-                    # Add ZZ interaction
-                    qc.cx(i, j)
-                    qc.rz(2 * gamma * cost, j)
-                    qc.cx(i, j)
-                    
-                    # Add local Z terms
-                    qc.rz(gamma * cost, i)
-                    qc.rz(gamma * cost, j)
-    
-    def _add_mixer_layer(
-        self,
-        qc: QuantumCircuit,
-        beta: float
-    ) -> None:
-        """
-        Add mixer Hamiltonian layer to the circuit.
-        
-        Args:
-            qc (QuantumCircuit): Quantum circuit
-            beta (float): Mixing angle parameter
-        """
-        for qubit in range(self.num_qubits):
-            qc.rx(2 * beta, qubit)
+        return counts
     
     def _optimize_parameters(
         self,
@@ -176,13 +119,15 @@ class QuantumRouteOptimizer:
                 gammas=gammas
             )
             
-            result = execute(
-                circuit,
-                self.simulator,
+            # Use sampler for optimization
+            job = self.sampler.run(
+                circuits=[circuit],
                 shots=self.config['shots']
-            ).result()
+            )
+            result = job.result()
             
-            counts = result.get_counts()
+            quasi_dist = result.quasi_dists[0]
+            counts = self._convert_quasi_dist_to_counts(quasi_dist)
             route, cost = self._process_results(counts, cost_matrix)
             return cost
         
@@ -204,49 +149,6 @@ class QuantumRouteOptimizer:
             'betas': optimal_params[:self.depth].tolist(),
             'gammas': optimal_params[self.depth:].tolist()
         }
-    
-    def _process_results(
-        self,
-        counts: Dict[str, int],
-        cost_matrix: np.ndarray
-    ) -> Tuple[List[int], float]:
-        """
-        Process measurement results to get optimal route.
-        
-        Args:
-            counts (Dict[str, int]): Circuit measurement counts
-            cost_matrix (np.ndarray): Cost matrix
-            
-        Returns:
-            Tuple[List[int], float]: Optimal route and its cost
-        """
-        # Get most frequent measurement outcome
-        best_bitstring = max(counts.items(), key=lambda x: x[1])[0]
-        
-        # Convert to route
-        route = [i for i, bit in enumerate(reversed(best_bitstring)) if bit == '1']
-        
-        # Calculate route cost
-        cost = 0.0
-        for i in range(len(route)-1):
-            cost += cost_matrix[route[i], route[i+1]]
-        
-        return route, cost
-
-    def get_circuit_statistics(self) -> Dict[str, int]:
-        """
-        Get statistics about the quantum circuit.
-        
-        Returns:
-            Dict[str, int]: Circuit statistics
-        """
-        return {
-            'num_qubits': self.num_qubits,
-            'depth': self.depth,
-            'shots': self.config['shots'],
-            'max_iterations': self.optimizer.maxiter
-        }
-
 
 class TrafficAwareQuantumOptimizer(QuantumRouteOptimizer):
     """Extended quantum optimizer with traffic-aware cost function."""
