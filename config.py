@@ -24,11 +24,23 @@ def get_default_vehicle_distribution() -> Dict[str, float]:
         "auto_rickshaw": 0.1
     }
 
+def get_default_resolution() -> Tuple[int, int]:
+    return (1920, 1080)
+
+def get_default_peak_flow_rate() -> Tuple[int, int]:
+    return (2000, 3000)
+
+def get_default_off_peak_flow_rate() -> Tuple[int, int]:
+    return (800, 1200)
+
+def get_default_night_flow_rate() -> Tuple[int, int]:
+    return (300, 500)
+
 @dataclass
 class DataConfig:
     """Data collection and preprocessing configuration"""
     frame_rate: int = 30
-    resolution: Tuple[int, int] = (1920, 1080)
+    resolution: Tuple[int, int] = field(default_factory=get_default_resolution)
     color_space: str = "RGB"
     augmentation_params: Dict = field(default_factory=get_default_augmentation_params)
 
@@ -50,6 +62,6 @@ class SimulationConfig:
     min_lanes: int = 1
     max_lanes: int = 6
     vehicle_distribution: Dict[str, float] = field(default_factory=get_default_vehicle_distribution)
-    peak_flow_rate: Tuple[int, int] = (2000, 3000)
-    off_peak_flow_rate: Tuple[int, int] = (800, 1200)
-    night_flow_rate: Tuple[int, int] = (300, 500)
+    peak_flow_rate: Tuple[int, int] = field(default_factory=get_default_peak_flow_rate)
+    off_peak_flow_rate: Tuple[int, int] = field(default_factory=get_default_off_peak_flow_rate)
+    night_flow_rate: Tuple[int, int] = field(default_factory=get_default_night_flow_rate)
