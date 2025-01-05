@@ -13,3 +13,4 @@ pylint>=2.9.6
 pytest>=6.2.5
 black>=21.9b0
 mypy>=0.910
+torchvision

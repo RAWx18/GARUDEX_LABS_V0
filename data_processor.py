@@ -5,6 +5,7 @@ import cv2
 import numpy as np
 from typing import Generator, List, Tuple
 import albumentations as A
+from config import DataConfig
 
 class VideoProcessor:
     """Handles video data preprocessing and augmentation"""
