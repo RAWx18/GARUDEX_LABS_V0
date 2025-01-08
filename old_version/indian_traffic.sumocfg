@@ -1,5 +1,5 @@
-<?xml version="1.0" encoding="UTF-8"?>
 <!-- indian_traffic.sumocfg -->
+<?xml version="1.0" encoding="UTF-8"?>
 <configuration>
     <input>
         <net-file value="indian_traffic.net.xml"/>
@@ -14,8 +14,7 @@
     </time>
     
     <processing>
-        <ignore-junction-blocker value="20"/>
-        <ignore-accidents value="true"/>
+        <collision.action value="none"/>
         <collision.mingap-factor value="0.1"/>
         <collision.check-junctions value="true"/>
         <default.speeddev value="0.4"/>
