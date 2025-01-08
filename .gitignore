@@ -1,3 +1,13 @@
-.venv
-__pycache__
-datasets/*
+# Ignore virtual environment
+.venv/
+
+# Ignore Python cache files
+__pycache__/
+
+# Ignore specific file types in the datasets folder
+datasets/*.MOV
+datasets/*.MP4
+
+# Ignore specific file types in the notebooks folder
+notebooks/*.pt
+notebooks/*.log
