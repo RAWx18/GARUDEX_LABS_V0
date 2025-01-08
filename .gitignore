@@ -6,7 +6,7 @@ __pycache__/
 
 # Ignore specific file types in the datasets folder
 datasets/*.MOV
-datasets/*.MP4
+datasets/*.mp4
 
 # Ignore specific file types in the notebooks folder
 notebooks/*.pt
