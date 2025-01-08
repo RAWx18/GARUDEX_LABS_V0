@@ -1,0 +1,188 @@
+graph TD
+    subgraph Edge Layer
+        YN["YOLOv8-nano Detection
+        Input: Video frames [640x640x3]
+        Output: {vehicle_id, class, bbox[x,y,w,h], conf>0.65}
+        Params: {batch=8, anchors=3, classes=5}
+        FPS: 30, Latency: <50ms"]
+        
+        QC["Queue Clustering
+        Input: {positions[x,y,t], timestamps[unix_ms]}
+        Output: {queue_len[meters], density[veh/km], flow[veh/h]}
+        Params: {min_pts=5, eps=10m, window=300s}
+        Update: 5s"]
+        
+        LD["Loop Detector
+        Input: {binary[0,1], sampling_rate=100Hz}
+        Output: {occupancy[%], speed[km/h], count[int]}
+        Params: {threshold=0.5V, debounce=20ms}"]
+        
+        WS["Weather Sensors
+        Input: {sensor_readings[raw], freq=1min}
+        Output: {temp[°C], rain[mm/h], visibility[m]}
+        Params: {calibration=1.02, averaging=5min}"]
+    end
+
+    subgraph Processing Layer
+        FE["Feature Engineering
+        Input: {sensor_data[batch,features], timestamps}
+        Output: {norm_vectors[batch,64], stats{μ,σ}}
+        Params: {scaler=StandardScaler, window=3600s}
+        Cache: Redis TTL=300s"]
+        
+        TS["Time Series Processing
+        Input: {history[t-24h:t], interval=5min}
+        Output: {temporal[batch,288,32], masks}
+        Params: {padding=zero, stride=5min}
+        Buffer: 24h rolling"]
+        
+        SP["Spatial Processing
+        Input: {grid[16,16,features], adjacency}
+        Output: {embeddings[batch,256], attention}
+        Params: {kernel=3x3, stride=1, pad=same}
+        Update: 1min"]
+        
+        DP["Dynamic Programming Scheduler
+        Input: {state[features], pred[t+1:t+12]}
+        Output: {phase_times[4], next_state}
+        Params: {horizon=12, γ=0.95, max_phases=4}"]
+    end
+
+    subgraph ML Pipeline
+        LSTM["LSTM Network
+        Layers: [64,32] units
+        Input: {temporal[batch,seq,32]}
+        Output: {predictions[batch,12]}
+        Params: {dropout=0.1, recurrent_dropout=0.1}
+        Batch: 32, Memory: 2GB"]
+        
+        XGB["XGBoost Model
+        Trees: 100, Depth: 6
+        Input: {features[batch,64]}
+        Output: {flow[batch]}
+        Params: {learning_rate=0.1, subsample=0.8}
+        Memory: 500MB"]
+        
+        TFL["TransformerLite
+        d_model=64, heads=4
+        Input: {spatio_temporal[batch,seq,dim]}
+        Output: {grid_pred[batch,16,16]}
+        Params: {layers=3, dropout=0.1}
+        Memory: 1GB"]
+        
+        ENS["Ensemble Model
+        Input: {predictions[3,batch,dim]}
+        Output: {weighted_pred[batch,dim]}
+        Params: {weights=[0.4,0.3,0.3]}
+        Update: 1min"]
+        
+        KD["Knowledge Distillation
+        Input: {teacher[large], student[small]}
+        Output: {optimized_model}
+        Params: {temperature=2.0, α=0.1}
+        Schedule: Weekly"]
+    end
+
+    subgraph Optimization
+        TR["TensorRT Engine
+        Input: {model.pb/.onnx}
+        Output: {engine.plan}
+        Params: {workspace=4GB, precision=FP16}
+        Platform: Jetson Xavier"]
+        
+        QT["Quantization
+        Input: {FP32_model}
+        Output: {FP16_model}
+        Params: {calib_batches=100}
+        Compression: 2x"]
+        
+        PR["Model Pruning
+        Target: 30% sparsity
+        Input: {dense_model}
+        Output: {sparse_model}
+        Params: {schedule=polynomial}
+        Speedup: 1.5x"]
+    end
+
+    subgraph P2P Network
+        AM["Async Messaging
+        Protocol: MQTT v5.0
+        QoS: 2
+        Retention: 24h
+        Latency: <100ms"]
+        
+        SP2["Spillback Prevention
+        Update: 30s
+        Buffer: 500m
+        Threshold: 80%"]
+        
+        CO["Coordinator
+        Protocol: gRPC
+        Timeout: 5s
+        Retry: 3x"]
+        
+        HX["Hex Grid Manager
+        Cells: 256
+        Resolution: 100m
+        Update: 10s"]
+    end
+
+    subgraph Emergency Systems
+        EP["Emergency Prioritizer
+        Latency: <2s
+        Range: 1km
+        Priority: 1-5"]
+        
+        DR["Disaster Response
+        Activation: <30s
+        Coverage: City-wide
+        Modes: 5"]
+        
+        AR["Alert Router
+        Protocols: CAP 1.2
+        Priority: 1-3
+        Timeout: 10s"]
+    end
+
+    subgraph Data Storage
+        TS_DB["TimescaleDB
+        Retention: 90d
+        Compression: 10x
+        Chunks: 1d"]
+        
+        CACHE["Redis Cache
+        Memory: 32GB
+        TTL: 300s
+        Persistence: RDB"]
+        
+        S3["S3 Storage
+        Bucket: traffic-ml
+        Lifecycle: 365d
+        Class: Standard"]
+    end
+
+    %% Connections remain the same as in original
+    YN & LD & WS --> FE
+    QC --> SP
+    FE --> TS & SP
+    TS & SP --> LSTM & XGB & TFL
+    LSTM & XGB & TFL --> ENS
+    ENS --> KD
+    KD --> TR & QT & PR
+    TR & QT & PR --> DP
+    DP --> AM
+    AM --> SP2 & CO & HX
+    SP2 --> CO
+    HX --> CO
+    EP & DR --> AR
+    AR --> CO
+    AR --> ALERT
+    CO --> TS_DB
+    TS_DB --> PRED & HIST
+    PRED & HIST --> CACHE
+    CACHE --> VIZ
+    VIZ --> MAP & DASH
+    ALERT --> DASH
+
+    classDef storage fill:#f9f,stroke:#333
+    class TS_DB,CACHE,S3 storage

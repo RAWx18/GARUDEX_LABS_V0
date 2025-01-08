@@ -1,0 +1,191 @@
+graph TD
+    subgraph Edge Layer
+        YN["YOLOv8-nano Detection
+        Input: Video frames [640x640x3]
+        Output: {vehicle_id, class, bbox, confidence}"]
+        
+        QC["Queue Clustering
+        Input: {vehicle positions, timestamps}
+        Output: {queue_length, density, flow_rate}"]
+        
+        LD["Loop Detector
+        Input: Binary signals
+        Output: {occupancy, speed, count}"]
+        
+        WS["Weather Sensors
+        Input: Raw sensor data
+        Output: {temp, rain, visibility}"]
+    end
+
+    subgraph Processing Layer
+        FE["Feature Engineering
+        Input: Raw sensor data
+        Output: Normalized vectors[batch_size, n_features]"]
+        
+        TS["Time Series Processing
+        Input: Historical data [t-24:t]
+        Output: Temporal features[batch_size, seq_len, features]"]
+        
+        SP["Spatial Processing
+        Input: Grid state matrix[n_cells, features]
+        Output: Spatial embeddings[batch_size, grid_dim]"]
+        
+        DP["Dynamic Programming Scheduler
+        Input: {current_state, predictions}
+        Output: {phase_timings, next_state}"]
+    end
+
+    subgraph ML Pipeline
+        LSTM["LSTM[64,32 units]
+        Input: Temporal features
+        Output: Time predictions[batch_size, horizon]"]
+        
+        XGB["XGBoost
+        Input: Feature vectors
+        Output: Flow predictions"]
+        
+        TFL["TransformerLite[d=64,h=4]
+        Input: Spatio-temporal features
+        Output: Grid predictions"]
+        
+        ENS["Ensemble
+        Input: Model predictions
+        Output: Weighted predictions"]
+        
+        KD["Knowledge Distillation
+        Input: {teacher_model, student_model}
+        Output: Optimized model"]
+    end
+
+    subgraph Optimization
+        TR["TensorRT
+        Input: TF/PyTorch model
+        Output: Optimized engine"]
+        
+        QT["Quantization[FP16]
+        Input: FP32 model
+        Output: Quantized model"]
+        
+        PR["Pruning[30% sparse]
+        Input: Dense model
+        Output: Sparse model"]
+    end
+
+    subgraph P2P Network
+        AM["Async Messaging
+        Input: {node_state, timestamp}
+        Output: {message_queue, acks}"]
+        
+        SP2["Spillback Prevention
+        Input: {queue_lengths, capacities}
+        Output: {warnings, adjustments}"]
+        
+        CO["Coordinator
+        Input: {local_states, messages}
+        Output: {coordination_signals}"]
+        
+        HX["Hex Grid Manager
+        Input: {cell_states[n_cells]}
+        Output: {grid_updates, flows}"]
+    end
+
+    subgraph Emergency Systems
+        EP["Emergency Prioritizer
+        Input: {emergency_vehicle, route}
+        Output: {priority_signals}"]
+        
+        DR["Disaster Response
+        Input: {event_type, severity}
+        Output: {evacuation_routes}"]
+        
+        AR["Alert Router
+        Input: {alerts, priorities}
+        Output: {routing_commands}"]
+    end
+
+    subgraph Data Storage
+        TS_DB["TimescaleDB
+        - Historical traffic data
+        - Weather records
+        - Incident logs"]
+        
+        CACHE["Redis Cache
+        - Real-time states
+        - Predictions
+        - Emergency info"]
+        
+        S3["S3 Storage
+        - Model checkpoints
+        - Configuration
+        - Analytics data"]
+    end
+
+    subgraph Visualization
+        MAP["MapLibre GL
+        Input: GeoJSON features
+        Output: Interactive map"]
+        
+        DASH["Dashboard (Grafana)
+        - Real-time metrics
+        - Predictions
+        - Alerts"]
+        
+        VIZ["Visualization Server
+        - Socket.IO
+        - Real-time updates
+        - Historical playback"]
+    end
+
+    subgraph Analytics
+        PRED["Prediction API
+        Input: Current state
+        Output: Future congestion"]
+        
+        HIST["Historical Analysis
+        Input: Time range
+        Output: Pattern analysis"]
+        
+        ALERT["Alert Generator
+        Input: Predictions
+        Output: Congestion alerts"]
+    end
+
+    %% Edge Layer connections
+    YN & LD & WS --> FE
+    QC --> SP
+
+    %% Processing Layer connections
+    FE --> TS & SP
+    TS & SP --> LSTM & XGB & TFL
+
+    %% ML Pipeline connections
+    LSTM & XGB & TFL --> ENS
+    ENS --> KD
+    KD --> TR & QT & PR
+
+    %% Optimization to P2P
+    TR & QT & PR --> DP
+    DP --> AM
+
+    %% P2P Network connections
+    AM --> SP2 & CO & HX
+    SP2 --> CO
+    HX --> CO
+
+    %% Emergency Systems integration
+    EP & DR --> AR
+    AR --> CO
+    AR --> ALERT
+
+    %% Data Storage connections
+    CO --> TS_DB
+    TS_DB --> PRED & HIST
+    PRED & HIST --> CACHE
+    CACHE --> VIZ
+
+    %% Visualization connections
+    VIZ --> MAP & DASH
+    ALERT --> DASH
+
+    classDef storage fill:#f9f,stroke:#333
+    class TS_DB,CACHE,S3 storage
