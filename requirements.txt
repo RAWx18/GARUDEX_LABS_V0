@@ -1,0 +1,4 @@
+ultralytics # yolo model
+numpy # mathematical applications
+supervision #video to image frames
+python-opencv # image

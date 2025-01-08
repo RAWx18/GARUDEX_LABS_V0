@@ -9,3 +9,8 @@ python -m venv .venv # windows
 python3 -m venv .venv # linux & macos
 source .venv/bin/activate # linux & macos
 ```
+
+TO CHECK GPU:
+```
+!nvidia-smi
+```
