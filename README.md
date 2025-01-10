@@ -96,6 +96,17 @@ Each module is in its own directory. Please update your code within these folder
 
 ---
 
+## Note for Team Members
+
+Whenever you make edits or updates to the code in your respective module folder, **always update the following files**:
+
+- **`README.md`**: Document any important changes, new features, or instructions for using the updated code in your module.
+- **`requirements.txt`**: If you've added new dependencies, make sure to include them in the `requirements.txt` file so others can install them.
+
+This ensures that the project remains well-documented and easy to set up for all contributors.
+
+---
+
 ## Notes
 
 - **Plans**: Follow the plans in `plans/updated_plan.md` and `plans/detailed_updated_plan.md` for guidance.
