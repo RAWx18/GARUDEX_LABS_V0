@@ -7,6 +7,9 @@ __pycache__/
 # Ignore specific file types in the datasets folder
 datasets/*.MOV
 datasets/*.mp4
+geopkg/*.gpkg
+geopkg/*.geojson
+geopkg/*.txt
 
 # Ignore specific file types in the notebooks folder
 notebooks/*.pt
