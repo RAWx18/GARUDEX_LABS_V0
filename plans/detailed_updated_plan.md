@@ -11,7 +11,7 @@
 
 - **Traffic Camera Feeds**
   - Format: Video stream (RTSP)
-  - Resolution: 1080p
+  - Resolution: 720p
   - Frame rate: 15 fps
   - Required metadata: camera_id, location, direction
 

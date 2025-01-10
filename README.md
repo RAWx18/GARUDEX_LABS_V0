@@ -1,6 +1,6 @@
 # Jhakaas-Rasta
 
-This repository contains the code and data for the **Jhakaas-Rasta** project. Below are the instructions and guidelines for setting up and managing this project.
+This repository contains code and data for the **Jhakaas-Rasta** project, focused on traffic monitoring, vehicle detection, traffic optimization, and more.
 
 ---
 
@@ -8,7 +8,7 @@ This repository contains the code and data for the **Jhakaas-Rasta** project. Be
 
 ### Python Environment Setup
 
-To create and activate a virtual environment, follow these steps:
+To set up a virtual environment:
 
 #### For **Windows**:
 ```bash
@@ -22,12 +22,16 @@ python3 -m venv .venv
 source .venv/bin/activate
 ```
 
+Then install dependencies:
+```bash
+pip install -r requirements.txt
+```
+
 ---
 
-## To Check GPU (if applicable):
+## GPU Check (if applicable)
 
-If you are working on a machine with an NVIDIA GPU, you can check the GPU status using the following command:
-
+For machines with an NVIDIA GPU, check the GPU status with:
 ```bash
 !nvidia-smi
 ```
@@ -36,45 +40,63 @@ If you are working on a machine with an NVIDIA GPU, you can check the GPU status
 
 ## Mermaid Diagrams
 
-For viewing or editing **Mermaid** diagrams, use [mermaid.live](https://mermaid.live). Simply copy and paste the content from the `.txt` files in the `mermaid files/` folder into the tool to visualize the diagrams.
+For visualizing **Mermaid** diagrams, use [mermaid.live](https://mermaid.live) by pasting the content from `.txt` files in the `mermaid_files/` folder.
 
 ---
 
 ## Git Large File Handling
 
-In case of any errors during pushing large files or uploading them by mistake, you can use the following commands to clean up the Git history and remove large files.
+To remove large files from Git history:
 
-1. **Install Git Filter Repo** (if needed):
+1. **Install Git Filter Repo**:
    ```bash
    !sudo apt install git-filter-repo
    ```
 
-2. **Remove Large File from Git History**:
-   Replace `datasets/output_processed.mp4` with the actual file name you want to remove.
+2. **Remove Large Files**:
    ```bash
-   git filter-repo --path datasets/output_processed.mp4 --invert-paths
+   git filter-repo --path <file> --invert-paths
    ```
 
-3. **Re-add the Remote Origin**:
-   If the remote has been removed or is not set, re-add it:
+3. **Re-add Remote**:
    ```bash
-   git remote add origin https://github.com/RAWx18/Jhakaas-Rasta.git
+   git remote add origin <repo_url>
    ```
 
-4. **Verify Remote**:
-   ```bash
-   git remote -v
-   ```
-
-5. **Push Changes to GitHub**:
-   After making the necessary changes, you can push your clean history:
+4. **Push Changes**:
    ```bash
    git push origin main
    ```
 
 ---
 
-### Notes
+## Module Structure
 
-- Ensure that large files, such as `.mp4` or `.mov` files, are properly added to `.gitignore` to avoid being pushed to GitHub.
-- Always check the status of your repository with `git status` before committing or pushing changes.
+Each module is in its own directory. Please update your code within these folders:
+
+- `grid_traffic_monitor`
+- `data_integration`
+- `vehicle_detection_flow`
+- `traffic_congestion_pred`
+- `signal_optimization`
+- `emergency_response`
+- `system_integration_pipeline`
+- `challan_communication_txn`
+
+---
+
+## Team Assignments
+
+- **RYAN**: Grid Division & Traffic Monitoring, Congestion Prediction
+- **RONIT**: Traffic Signal Optimization
+- **PARV**: Data Integration, Emergency Response
+- **AKSHITA**: Vehicle Detection & Traffic Flow Analysis
+- **LAKSHYA**: Challan & Blockchain Transactions
+- **KAIRVEE**: System Integration & Dashboard
+
+---
+
+## Notes
+
+- **Plans**: Follow the plans in `plans/updated_plan.md` and `plans/detailed_updated_plan.md` for guidance.
+- **Notebooks**: Use the `notebooks` folder for trial and error or testing.
