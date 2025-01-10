@@ -149,39 +149,75 @@ class TrafficCongestionPredictor:
         self.optimizer = torch.optim.Adam(self.model.parameters(), lr=learning_rate)
         self.criterion = nn.MSELoss()
 
-        
     def prepare_data(
         self,
         traffic_data: pd.DataFrame,
         hex_ids: List[str]
     ) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
         """Prepare data for training/prediction."""
+        # Debug print
+        print(f"Input traffic_data shape: {traffic_data.shape}")
+        print(f"Number of hex_ids: {len(hex_ids)}")
+        
+        if traffic_data.empty:
+            raise ValueError("Empty traffic data provided")
+        
         # Create feature matrix
         features = []
+        valid_hex_ids = []
+        
         for hex_id in hex_ids:
             hex_data = traffic_data[traffic_data['hex_id'] == hex_id]
-            features.append(hex_data[['traffic_density', 'time_of_day', 'day_of_week']].values)
+            if not hex_data.empty:
+                feat_array = hex_data[['traffic_density', 'time_of_day', 'day_of_week']].values
+                features.append(feat_array)
+                valid_hex_ids.append(hex_id)
         
-        features = np.array(features).transpose(1, 0, 2)  # (timesteps, nodes, features)
+        if not features:
+            raise ValueError("No valid data found for any hex_id")
+        
+        # Convert to numpy array and check shape
+        features = np.array(features)
+        print(f"Features shape after initial processing: {features.shape}")
+        
+        # Transpose to (timesteps, nodes, features)
+        features = features.transpose(1, 0, 2)
+        print(f"Features shape after transpose: {features.shape}")
         
         # Scale features
         original_shape = features.shape
         features_2d = features.reshape(-1, features.shape[-1])
-        features_scaled = self.scaler.fit_transform(features_2d)
-        features = features_scaled.reshape(original_shape)
+        
+        if features_2d.shape[0] == 0:
+            raise ValueError("Empty feature array after reshaping")
+            
+        print(f"Features shape before scaling: {features_2d.shape}")
+        
+        try:
+            features_scaled = self.scaler.fit_transform(features_2d)
+            features = features_scaled.reshape(original_shape)
+        except Exception as e:
+            print(f"Scaling error: {str(e)}")
+            raise
         
         # Create adjacency matrix based on H3 neighbors
-        adj_matrix = np.zeros((len(hex_ids), len(hex_ids)))
-        for i, hex1 in enumerate(hex_ids):
-            for j, hex2 in enumerate(hex_ids):
-                if i != j and h3.h3_distance(hex1, hex2) == 1:
+        num_valid_hexes = len(valid_hex_ids)
+        adj_matrix = np.zeros((num_valid_hexes, num_valid_hexes))
+        
+        for i, hex1 in enumerate(valid_hex_ids):
+            for j, hex2 in enumerate(valid_hex_ids):
+                if i != j and h3.grid_distance(hex1, hex2) == 1:
                     adj_matrix[i, j] = 1
                     
         # Normalize adjacency matrix
-        adj_matrix = adj_matrix / (np.sum(adj_matrix, axis=1, keepdims=True) + 1e-6)
+        row_sums = np.sum(adj_matrix, axis=1, keepdims=True)
+        adj_matrix = adj_matrix / (row_sums + 1e-6)
         
-        return features, features[:, :, 0], adj_matrix  # features, targets, adj_matrix
+        print(f"Final shapes - Features: {features.shape}, Adj Matrix: {adj_matrix.shape}")
         
+        return features, features[:, :, 0], adj_matrix  # features, targets, adj_matrix        
+
+
     def train(
         self,
         train_features: np.ndarray,

@@ -165,9 +165,21 @@ class GridTrafficMonitor:
         
         # Add hexagons to map
         for hex_id, density in self.current_grids.items():
-            hex_boundary = h3.cell_to_boundary(hex_id, geo_json=True)  # Updated function name
+            # Get hex boundary coordinates
+            boundary = h3.cell_to_boundary(hex_id)
+            # Convert to GeoJSON-compatible format
+            geojson_coords = [[coord[1], coord[0]] for coord in boundary]
+            # Close the polygon by repeating the first point
+            geojson_coords.append(geojson_coords[0])
+            
             folium.GeoJson(
-                {"type": "Polygon", "coordinates": [hex_boundary]},
+                {
+                    "type": "Feature",
+                    "geometry": {
+                        "type": "Polygon",
+                        "coordinates": [geojson_coords]
+                    }
+                },
                 style_function=lambda x, density=density: {
                     'fillColor': colormap(density),
                     'color': 'black',
