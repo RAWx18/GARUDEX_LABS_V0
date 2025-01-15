@@ -1,6 +1,6 @@
-# Jhakaas-Rasta
+# GARUDEX LABS
 
-This repository contains code and data for the **Jhakaas-Rasta** project, focused on traffic monitoring, vehicle detection, traffic optimization, and more.
+This repository contains code and data for the **Chakravyuha-GarudexLabsv0** project, focused on traffic monitoring, vehicle detection, traffic optimization, and more.
 
 ---
 
